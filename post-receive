@@ -1,0 +1,54 @@
+#!/bin/bash
+#
+#  AUTHOR: Stefano Viola (estebanSannin)
+# LICENSE: GPLv3
+#
+
+
+read -a parms
+OLDREV=${parms[0]}
+NEWREV=${parms[1]}
+REFNAME=${parms[2]}
+
+################## CONFIGURATION VARIABLE
+REPOSITORY_BASE_LINK="https://my_git_server_url.org"
+TELEGRAM_GROUP_ID=
+TELEGRAM_BOT_KEY=""
+##################
+
+BRANCH=$REFNAME
+AUTHOR_COMMIT=$(git log --format='%an <%ae>' -1 $BRANCH)
+COMMIT_HASH=$NEWREV
+REPOSITORY=$(basename `pwd`)
+MESSAGE_COMMIT=$(git log --format='%B' -1 $BRANCH)
+COMMIT_LINK="$REPOSITORY_BASE_LINK/$REPOSITORY/commit/$COMMIT_HASH"
+
+################## Response message in Markdown
+TELEGRAM_RESPONSE="
+*NEW GIT EVENT*
+
+*New commit in:* $REPOSITORY_BASE_LINK/$REPOSITORY 
+*Author:* $AUTHOR_COMMIT
+*Branch:* $BRANCH
+
+*Commit link:* $COMMIT_LINK
+*Commit Message:* 
+\`\`\`text
+ $MESSAGE_COMMIT
+\`\`\`"
+echo "--------------------------------------------"
+echo "TELEGRAM SENDING..."
+echo "--------------------------------------------"
+
+# Some dedug prints
+
+#echo "oldrev: ${parms[0]}"
+#echo "newrev: ${parms[1]}"
+#echo "refname: ${parms[2]}"
+#echo "parms: ${parms[@]}"
+#echo "BRANCH: $BRANCH"
+
+################## Send message
+REQUEST_RESPONSE=$(curl -i -s -X GET --data-urlencode "text=$TELEGRAM_RESPONSE" https://api.telegram.org/bot$LAB223_BOT_KEY/sendMessage?chat_id=$TELEGRAM_GROUP_ID\&parse_mode=Markdown)
+
+### END SCRIPT
